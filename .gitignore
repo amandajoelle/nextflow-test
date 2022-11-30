@@ -63,3 +63,4 @@ gradle.properties
 plugins-prod
 sandbox
 wave-tests
+data/*
