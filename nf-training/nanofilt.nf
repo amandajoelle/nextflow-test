@@ -10,15 +10,15 @@ params.input = "$projectDir/data/test.fastq"
 process run_nanofilt {
     container = singularity
     input:
-    path (params.input) 
+        path(params.input)
 
     output:
-    file ('output.fastq')
+        file('filtered.fastq')
 
     script:
-    """
-    NanoFilt -q 10 ${params.input} > output.fastq
-    """
+        """
+        NanoFilt -q 10 < ${params.input} > filtered.fastq
+        """
 }
 
 // Exécution du pipeline
