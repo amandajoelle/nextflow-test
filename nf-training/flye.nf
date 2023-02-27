@@ -1,6 +1,12 @@
 #!/usr/bin/env nextflow
 
-params.input = "$projectDir/work/ce/6ddbb72d1d54d02086fa5906e23b8d/trimmed.fasta "
+if (params.imput) {
+  params.input = params.imput
+} else {
+  println "Erreur : Veuillez spécifier un fichier fastq en utilisant l'option --imput"
+  System.exit(1)
+}
+
 
 singularity = 'https://depot.galaxyproject.org/singularity/flye:2.9--py310h590eda1_1'
 
