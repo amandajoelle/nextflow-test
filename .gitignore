@@ -37,6 +37,7 @@ cacheDir/
 build/**
 modules/**/build/
 modules/**/*.iml
+node_module/
 
 **/out/*
 tmp/
