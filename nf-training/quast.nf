@@ -20,12 +20,12 @@ if (params.imput3) {
   System.exit(1)
 }
 
-if (params.imput4) {
-  params.input4 = params.imput4
-} else {
-  println "Erreur : Veuillez spécifier un fichier fastq en utilisant l'option --imput4"
-  System.exit(1)
-}
+//if (params.imput4) {
+// params.input4 = params.imput4
+//} else {
+//println "Erreur : Veuillez spécifier un fichier fastq en utilisant l'option --imput4"
+//System.exit(1)
+//}
 
 singularityImage = "https://depot.galaxyproject.org/singularity/quast:5.2.0--py39pl5321h2add14b_1"
 
@@ -36,17 +36,17 @@ process compare {
     path params.input1
     path params.input2
     path params.input3
-    path params.input4
+    //path params.input4
 
   output:
     path "report_dir"
 
   script:
     """
-    quast.py  -o report_dir ${params.input1} ${params.input2} ${params.input3} ${params.input4}
+    quast.py  -o report_dir ${params.input1} ${params.input2} ${params.input3} 
     """
 }
 
 workflow {
-  compare(params.input1, params.input2, params.input3, params.input4).view()
+  compare(params.input1, params.input2, params.input3).view()
 }
