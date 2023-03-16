@@ -13,12 +13,6 @@ if (params.imput2) {
   System.exit(1)
 }
 
-if (params.imput3) {
-  params.input3 = params.imput3
-} else {
-  println "Erreur : Veuillez spécifier un fichier fastq en utilisant l'option --imput3"
-  System.exit(1)
-}
 
 //if (params.imput4) {
 // params.input4 = params.imput4
@@ -35,7 +29,7 @@ process compare {
   input:
     path params.input1
     path params.input2
-    path params.input3
+    //path params.input3
     //path params.input4
 
   output:
@@ -43,10 +37,10 @@ process compare {
 
   script:
     """
-    quast.py  -o report_dir ${params.input1} ${params.input2} ${params.input3} 
+    quast.py  -o report_dir ${params.input1} ${params.input2} 
     """
 }
 
 workflow {
-  compare(params.input1, params.input2, params.input3).view()
+  compare(params.input1, params.input2).view()
 }
