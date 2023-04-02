@@ -11,6 +11,8 @@ params.publishDir = './results'
 
 params.input = "$projectDir/data/test.fastq"
 
+params.input1 = "$projectDir/data/test1.fastq"
+
 
 
 
@@ -65,37 +67,6 @@ process nanofilt {
 }
 
 
-// Étape d'assemblage du fichier prinseq avec flye
-process flye_prinseq {
-
-  publishDir "${params.publishDir}/flye_prinseq", mode: 'copy'
-  //params.input = "$projectDir/results/prinseq/trimmed.fastq" 
-  container = singularity_flye
-  input:
-    path (prinseq_out)
-  output:
-    file 'assembly_prinseq.fasta'
-  script:
-    """
-    flye --nano-raw ${prinseq_out} -o assembly
-    mv assembly/assembly.fasta assembly_prinseq.fasta
-    """
-}
-
-// Étape d'assemblage du fichier nanofilt avec flye
-process flye_nanofilt {
-  container = singularity_flye
-  input:
-    path(nanofilt_out) 
-  output:
-    file('assembly_nanofilt.fasta')
-  script:
-    """
-    flye --nano-raw ${nanofilt_out} -o assembly
-    mv assembly/assembly.fasta assembly_nanofilt.fasta
-    """
-}
-
 // Étape d'assemblage du fichier fastq en imput avec flye
 process flye_origin {
   publishDir "${params.publishDir}/flye_origin", mode: 'copy'
@@ -104,21 +75,16 @@ process flye_origin {
 
   input:
     path input
-    path prinseq_ch
-    path nanofilt_ch
 
   output:
     file 'assembly_input.fasta'
-    file 'assembly_prinseq_ch.fasta'
-    file 'assembly_nanofilt_ch.fasta'
+    
   script:
     """
     flye --nano-raw ${input} -o assembly_input
-    flye --nano-raw ${prinseq_ch} -o assembly_prinseq_ch
-    flye --nano-raw ${nanofilt_ch} -o assembly_nanofilt_ch
+   
     mv assembly_input/assembly.fasta assembly_input.fasta
-    mv assembly_prinseq_ch/assembly.fasta assembly_prinseq_ch.fasta
-    mv assembly_nanofilt_ch/assembly.fasta assembly_nanofilt_ch.fasta
+    
     """
 }
 
@@ -129,23 +95,25 @@ process compare {
 
   input:
     path x 
-    path y 
-    path z
 
   output:
     path "report_dir"
 
   script:
     """
-    quast.py  -o report_dir ${x} ${y} ${z} 
+    quast.py  -o report_dir ${x}
     """
 }
 
 inputs_ch = Channel.fromPath(params.input) 
+input1_ch = Channel.fromPath(params.input1)
 
 workflow {
+  inputs_ch.concat(input1_ch)
   prinseq_ch = prinseq(inputs_ch)
   nanofilt_ch = nanofilt(inputs_ch)
-  flye_origin_ch = flye_origin(inputs_ch, prinseq_ch, nanofilt_ch)
-  compare(flye_origin_ch)
+  concat_ch = inputs_ch
+  concat_ch.concat(prinseq_ch, nanofilt_ch)
+  flye_origin_ch = flye_origin(concat_ch)
+  compare(flye_origin_ch.collect())
 }
