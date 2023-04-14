@@ -11,7 +11,7 @@ https://linuxhint.com/install-anaconda-ubuntu-22-04/ 
 > conda config –add channels bioconda 
 > conda config –add channels conda-forge 
 > conda config –show channels  
-#### Install Priseq
+#### Install Prinseq
 $ wget -N http://downloads.sourceforge.net/project/prinseq/standalone/prinseq-lite-0.20.4.tar.gz
 
 $ tar -zxvf prinseq-lite-0.20.4.tar.gz
@@ -27,7 +27,7 @@ $ cp -puv prinseq-lite-0.20.4/prinseq-graphs.pl /usr/local/bin/prinseq-graphs &&
 
 > conda env list 
 
->conda activate genome_assembly 
+> conda activate genome_assembly 
 
 ### Use
     - Prinseq 

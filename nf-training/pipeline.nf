@@ -1,4 +1,4 @@
-nextflow.enable.dsl=2
+// nextflow.enable.dsl=2
 
 /*if (params.imput) {
   params.input = params.imput
@@ -6,7 +6,7 @@ nextflow.enable.dsl=2
   println "Erreur : Veuillez spécifier un fichier fastq en utilisant l'option --imput"
   System.exit(1)
 }*/
-
+ 
 params.publishDir = './results'
 
 params.input = "$projectDir/data/test.fastq"
@@ -28,12 +28,12 @@ process prinseq {
   publishDir "${params.publishDir}/prinseq", mode: 'copy'
   
   input:
-    path inputs
+    path input
   output:
-    path 'trimmed.fastq'
+    path "trimmed_${input.baseName}.fastq"
   script: 
     """
-    prinseq-lite.pl -fastq ${inputs} -out_good trimmed -trim_left 20
+    prinseq-lite.pl -fastq ${input} -out_good trimmed_${input.baseName} -trim_left 20
     """
 }
 
@@ -55,14 +55,14 @@ process nanofilt {
     publishDir "${params.publishDir}/nanofilt", mode: 'copy'
 
     input:
-        path inputs
+        path input
 
     output:
-        file 'filtered.fastq'
+        file "filtered_${input.baseName}.fastq"
 
     script:
         """
-        NanoFilt -q 10 < ${inputs} > filtered.fastq
+        NanoFilt -q 10 < ${input} > filtered_${input.baseName}.fastq
         """
 }
 
@@ -77,13 +77,13 @@ process flye_origin {
     path input
 
   output:
-    file 'assembly_input.fasta'
+    file "assembly_${input.baseName}.fasta"
     
   script:
     """
-    flye --nano-raw ${input} -o assembly_input
+    flye --nano-raw ${input} -o assembly_${input.baseName}
    
-    mv assembly_input/assembly.fasta assembly_input.fasta
+    mv assembly_${input.baseName}/assembly.fasta assembly_${input.baseName}.fasta
     
     """
 }
@@ -105,15 +105,17 @@ process compare {
     """
 }
 
-inputs_ch = Channel.fromPath(params.input) 
-input1_ch = Channel.fromPath(params.input1)
+inputs_ch = Channel.fromPath([params.input, params.input1]) 
 
 workflow {
-  inputs_ch.concat(input1_ch)
   prinseq_ch = prinseq(inputs_ch)
   nanofilt_ch = nanofilt(inputs_ch)
-  concat_ch = inputs_ch
-  concat_ch.concat(prinseq_ch, nanofilt_ch)
+  
+  concat_ch = inputs_ch.concat(prinseq_ch, nanofilt_ch)
+  //concat_ch = inputs_ch
+  //concat_ch = concat_ch.concat(prinseq_ch, nanofilt_ch)
+  //concat_ch.view{ "val : $it" }
   flye_origin_ch = flye_origin(concat_ch)
+  flye_origin_ch.collect().view()
   compare(flye_origin_ch.collect())
 }
